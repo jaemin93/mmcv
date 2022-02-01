@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
 import onnx
@@ -62,7 +63,7 @@ def onnx2trt(onnx_model,
         raise RuntimeError(f'parse onnx failed:\n{error_msgs}')
 
     # config builder
-    builder.max_workspace_size = max_workspace_size
+    # builder.max_workspace_size = max_workspace_size
 
     config = builder.create_builder_config()
     config.max_workspace_size = max_workspace_size
@@ -76,7 +77,7 @@ def onnx2trt(onnx_model,
     config.add_optimization_profile(profile)
 
     if fp16_mode:
-        builder.fp16_mode = fp16_mode
+        # builder.fp16_mode = fp16_mode
         config.set_flag(trt.BuilderFlag.FP16)
 
     # create engine

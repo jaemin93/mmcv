@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved
 #include "trt_modulated_deform_conv.hpp"
 
 #include <assert.h>
@@ -50,7 +51,7 @@ ModulatedDeformableConvPluginDynamic::ModulatedDeformableConvPluginDynamic(
 ModulatedDeformableConvPluginDynamic::~ModulatedDeformableConvPluginDynamic() {}
 
 nvinfer1::IPluginV2DynamicExt *ModulatedDeformableConvPluginDynamic::clone()
-    const {
+    const noexcept {
   ModulatedDeformableConvPluginDynamic *plugin =
       new ModulatedDeformableConvPluginDynamic(
           mLayerName, mStride, mPadding, mDilation, mDeformableGroup, mGroup);
@@ -61,7 +62,7 @@ nvinfer1::IPluginV2DynamicExt *ModulatedDeformableConvPluginDynamic::clone()
 
 nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
-    nvinfer1::IExprBuilder &exprBuilder) {
+    nvinfer1::IExprBuilder &exprBuilder) noexcept {
   nvinfer1::DimsExprs ret;
   ret.nbDims = 4;
   ret.d[0] = inputs[0].d[0];
@@ -75,7 +76,7 @@ nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(
 
 bool ModulatedDeformableConvPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
-    int nbOutputs) {
+    int nbOutputs) noexcept {
   if (pos == 0) {
     return (inOut[pos].type == nvinfer1::DataType::kFLOAT &&
             inOut[pos].format == nvinfer1::TensorFormat::kLINEAR);
@@ -88,7 +89,7 @@ bool ModulatedDeformableConvPluginDynamic::supportsFormatCombination(
 
 void ModulatedDeformableConvPluginDynamic::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {
+    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) noexcept {
   if (nbInputs == 5) {
     mWithBias = true;
   }
@@ -96,7 +97,7 @@ void ModulatedDeformableConvPluginDynamic::configurePlugin(
 
 size_t ModulatedDeformableConvPluginDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
+    const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const noexcept {
   int sizeof_dtype = mmcv::getElementSize(outputs[0].type);
 
   int batch_size = inputs[0].dims.d[0];
@@ -121,7 +122,7 @@ size_t ModulatedDeformableConvPluginDynamic::getWorkspaceSize(
 int ModulatedDeformableConvPluginDynamic::enqueue(
     const nvinfer1::PluginTensorDesc *inputDesc,
     const nvinfer1::PluginTensorDesc *outputDesc, const void *const *inputs,
-    void *const *outputs, void *workSpace, cudaStream_t stream) {
+    void *const *outputs, void *workSpace, cudaStream_t stream) noexcept {
   int batch = inputDesc[0].dims.d[0];
   int channels = inputDesc[0].dims.d[1];
   int height = inputDesc[0].dims.d[2];
@@ -158,31 +159,31 @@ int ModulatedDeformableConvPluginDynamic::enqueue(
 }
 
 nvinfer1::DataType ModulatedDeformableConvPluginDynamic::getOutputDataType(
-    int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType *inputTypes, int nbInputs) const noexcept {
   return inputTypes[0];
 }
 
 // IPluginV2 Methods
-const char *ModulatedDeformableConvPluginDynamic::getPluginType() const {
+const char *ModulatedDeformableConvPluginDynamic::getPluginType() const noexcept {
   return PLUGIN_NAME;
 }
 
-const char *ModulatedDeformableConvPluginDynamic::getPluginVersion() const {
+const char *ModulatedDeformableConvPluginDynamic::getPluginVersion() const noexcept {
   return PLUGIN_VERSION;
 }
 
-int ModulatedDeformableConvPluginDynamic::getNbOutputs() const { return 1; }
+int ModulatedDeformableConvPluginDynamic::getNbOutputs() const noexcept { return 1; }
 
-int ModulatedDeformableConvPluginDynamic::initialize() { return 0; }
+int ModulatedDeformableConvPluginDynamic::initialize() noexcept { return 0; }
 
-void ModulatedDeformableConvPluginDynamic::terminate() {}
+void ModulatedDeformableConvPluginDynamic::terminate() noexcept {}
 
-size_t ModulatedDeformableConvPluginDynamic::getSerializationSize() const {
+size_t ModulatedDeformableConvPluginDynamic::getSerializationSize() const noexcept {
   return sizeof(mStride) + sizeof(mPadding) + sizeof(mDilation) +
          sizeof(mDeformableGroup) + sizeof(mGroup);
 }
 
-void ModulatedDeformableConvPluginDynamic::serialize(void *buffer) const {
+void ModulatedDeformableConvPluginDynamic::serialize(void *buffer) const noexcept {
   serialize_value(&buffer, mStride);
   serialize_value(&buffer, mPadding);
   serialize_value(&buffer, mDilation);
@@ -190,25 +191,25 @@ void ModulatedDeformableConvPluginDynamic::serialize(void *buffer) const {
   serialize_value(&buffer, mGroup);
 }
 
-void ModulatedDeformableConvPluginDynamic::destroy() {
+void ModulatedDeformableConvPluginDynamic::destroy() noexcept {
   // This gets called when the network containing plugin is destroyed
   delete this;
 }
 
 void ModulatedDeformableConvPluginDynamic::attachToContext(
     cudnnContext *cudnnContext, cublasContext *cublasContext,
-    nvinfer1::IGpuAllocator *gpuAllocator) {
+    nvinfer1::IGpuAllocator *gpuAllocator) noexcept {
   m_cublas_handle = cublasContext;
 }
 
-void ModulatedDeformableConvPluginDynamic::detachFromContext() {}
+void ModulatedDeformableConvPluginDynamic::detachFromContext() noexcept {}
 
 void ModulatedDeformableConvPluginDynamic::setPluginNamespace(
-    const char *libNamespace) {
+    const char *libNamespace) noexcept {
   mNamespace = libNamespace;
 }
 
-const char *ModulatedDeformableConvPluginDynamic::getPluginNamespace() const {
+const char *ModulatedDeformableConvPluginDynamic::getPluginNamespace() const noexcept {
   return mNamespace.c_str();
 }
 
@@ -225,22 +226,22 @@ ModulatedDeformableConvPluginDynamicCreator::
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *ModulatedDeformableConvPluginDynamicCreator::getPluginName() const {
+const char *ModulatedDeformableConvPluginDynamicCreator::getPluginName() const noexcept {
   return PLUGIN_NAME;
 }
 
 const char *ModulatedDeformableConvPluginDynamicCreator::getPluginVersion()
-    const {
+    const noexcept {
   return PLUGIN_VERSION;
 }
 
 const nvinfer1::PluginFieldCollection *
-ModulatedDeformableConvPluginDynamicCreator::getFieldNames() {
+ModulatedDeformableConvPluginDynamicCreator::getFieldNames() noexcept {
   return &mFC;
 }
 
 nvinfer1::IPluginV2 *ModulatedDeformableConvPluginDynamicCreator::createPlugin(
-    const char *name, const nvinfer1::PluginFieldCollection *fc) {
+    const char *name, const nvinfer1::PluginFieldCollection *fc) noexcept {
   nvinfer1::Dims stride{2, {1, 1}};
   nvinfer1::Dims padding{2, {0, 0}};
   nvinfer1::Dims dilation{2, {1, 1}};
@@ -289,7 +290,7 @@ nvinfer1::IPluginV2 *ModulatedDeformableConvPluginDynamicCreator::createPlugin(
 
 nvinfer1::IPluginV2 *
 ModulatedDeformableConvPluginDynamicCreator::deserializePlugin(
-    const char *name, const void *serialData, size_t serialLength) {
+    const char *name, const void *serialData, size_t serialLength) noexcept {
   auto plugin =
       new ModulatedDeformableConvPluginDynamic(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
@@ -297,11 +298,11 @@ ModulatedDeformableConvPluginDynamicCreator::deserializePlugin(
 }
 
 void ModulatedDeformableConvPluginDynamicCreator::setPluginNamespace(
-    const char *libNamespace) {
+    const char *libNamespace) noexcept {
   mNamespace = libNamespace;
 }
 
 const char *ModulatedDeformableConvPluginDynamicCreator::getPluginNamespace()
-    const {
+    const noexcept {
   return mNamespace.c_str();
 }
